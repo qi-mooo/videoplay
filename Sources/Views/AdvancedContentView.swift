@@ -410,6 +410,8 @@ struct AdvancedVideoPlayerView: UIViewRepresentable {
         var beautySettings: BeautySettings
         var errorMessage: Binding<String?>
         var statusObserver: NSKeyValueObservation?
+        var currentVideoURL: URL?
+        var progressSaveTimer: Timer?
         
         // 安全资源管理
         var currentSecurityScopedURL: URL?
@@ -433,6 +435,12 @@ struct AdvancedVideoPlayerView: UIViewRepresentable {
         }
         
         func cleanup() {
+            // 保存播放进度
+            saveCurrentProgress()
+            
+            progressSaveTimer?.invalidate()
+            progressSaveTimer = nil
+            
             downloadTask?.cancel()
             downloadTask = nil
             progressObserver?.invalidate()
@@ -573,6 +581,12 @@ struct AdvancedVideoPlayerView: UIViewRepresentable {
             
             Logger.shared.info("🎬 setupPlayer: \(url.lastPathComponent)")
             
+            // 保存旧视频的播放进度
+            saveCurrentProgress()
+            
+            // 记录当前视频 URL
+            currentVideoURL = url
+            
             if let oldUrl = currentSecurityScopedURL {
                 oldUrl.stopAccessingSecurityScopedResource()
                 currentSecurityScopedURL = nil
@@ -706,6 +720,12 @@ struct AdvancedVideoPlayerView: UIViewRepresentable {
             player?.play()
             setupDisplayLink()
             updateBeauty(beautySettings)
+            
+            // 恢复播放进度
+            restorePlaybackProgress(for: url)
+            
+            // 启动定时保存进度
+            startProgressSaveTimer()
         }
         
         func rotate(to orientation: UIInterfaceOrientationMask) {
@@ -813,6 +833,70 @@ struct AdvancedVideoPlayerView: UIViewRepresentable {
                 let seconds = percentage * CMTimeGetSeconds(duration)
                 player.seek(to: CMTime(seconds: seconds, preferredTimescale: 600))
             }
+        }
+        
+        // MARK: - Playback Progress Management
+        
+        /// 保存当前播放进度
+        private func saveCurrentProgress() {
+            guard PlayerSettings.shared.rememberPlaybackProgress,
+                  let url = currentVideoURL,
+                  let player = player,
+                  let duration = player.currentItem?.duration else {
+                return
+            }
+            
+            let currentTime = CMTimeGetSeconds(player.currentTime())
+            let totalDuration = CMTimeGetSeconds(duration)
+            
+            guard !currentTime.isNaN, !totalDuration.isNaN, totalDuration > 0 else {
+                return
+            }
+            
+            PlaybackProgressManager.shared.saveProgress(
+                for: url,
+                currentTime: currentTime,
+                duration: totalDuration
+            )
+        }
+        
+        /// 恢复播放进度
+        private func restorePlaybackProgress(for url: URL) {
+            guard PlayerSettings.shared.rememberPlaybackProgress else {
+                return
+            }
+            
+            if let progress = PlaybackProgressManager.shared.getProgress(for: url) {
+                // 延迟恢复，确保播放器已准备好
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                    guard let self = self, let player = self.player else { return }
+                    
+                    let seekTime = CMTime(seconds: progress.currentTime, preferredTimescale: 600)
+                    player.seek(to: seekTime, toleranceBefore: .zero, toleranceAfter: .zero) { finished in
+                        if finished {
+                            Logger.shared.info("⏩ Restored playback position: \(self.formatTime(progress.currentTime))")
+                        }
+                    }
+                }
+            }
+        }
+        
+        /// 启动定时保存进度
+        private func startProgressSaveTimer() {
+            progressSaveTimer?.invalidate()
+            
+            // 每 10 秒自动保存一次进度
+            progressSaveTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { [weak self] _ in
+                self?.saveCurrentProgress()
+            }
+        }
+        
+        /// 格式化时间
+        private func formatTime(_ seconds: Double) -> String {
+            guard !seconds.isNaN && !seconds.isInfinite else { return "0:00" }
+            let mins = Int(seconds) / 60
+            let secs = Int(seconds) % 60
+            return String(format: "%d:%02d", mins, secs)
         }
     }
 }
