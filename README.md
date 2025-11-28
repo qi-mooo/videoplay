@@ -2,6 +2,14 @@
 
 一个功能强大的 iOS 视频播放器应用，支持本地视频播放、WebDAV 网络视频播放，并集成了实时美颜滤镜功能。
 
+[![Platform](https://img.shields.io/badge/platform-iOS-lightgrey.svg)](https://developer.apple.com/ios/)
+[![Swift](https://img.shields.io/badge/Swift-5.0-orange.svg)](https://swift.org)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+## 📸 预览
+
+> 支持本地视频和 WebDAV 网络视频播放，实时美颜滤镜处理
+
 ## ✨ 主要特性
 
 - 🎬 **多源视频播放**
@@ -75,12 +83,15 @@ videoplay/
 
 ## 🛠 技术栈
 
-- **开发语言**: Swift 5, Objective-C++
-- **UI 框架**: SwiftUI
-- **视频播放**: AVFoundation (AVPlayer)
-- **视频处理**: GPUPixel (C++ 图像处理框架)
-- **项目管理**: Tuist
-- **最低支持**: iOS 16.0+
+| 技术 | 说明 |
+|------|------|
+| **开发语言** | Swift 5, Objective-C++ |
+| **UI 框架** | SwiftUI |
+| **视频播放** | AVFoundation (AVPlayer) |
+| **视频处理** | GPUPixel (C++ 图像处理框架) |
+| **网络协议** | WebDAV (HTTP Basic Auth) |
+| **项目管理** | Tuist |
+| **最低支持** | iOS 16.0+ |
 
 ## 📦 依赖项
 
@@ -100,7 +111,7 @@ videoplay/
 
 1. **克隆项目**
    ```bash
-   git clone <repository-url>
+   git clone git@github.com:qi-mooo/videoplay.git
    cd videoplay
    ```
 
@@ -137,25 +148,41 @@ videoplay/
 
 ### WebDAV 服务器配置
 
-1. 打开应用设置
-2. 点击 "WebDAV 浏览器"
-3. 输入服务器地址、用户名和密码
-4. 浏览并选择视频文件播放
+1. 打开应用主界面
+2. 点击 "WebDAV 浏览器" 按钮
+3. 输入服务器配置：
+   - **服务器地址**: `http://your-server:port` 或 `https://your-server:port`
+   - **用户名**: WebDAV 账号
+   - **密码**: WebDAV 密码
+4. 点击连接，浏览文件列表
+5. 选择视频文件开始播放
+
+**示例配置**:
+```
+服务器: http://192.168.1.100:5005
+用户名: admin
+密码: ********
+```
 
 ### 美颜设置
 
 在播放视频时，可以实时调节以下美颜参数：
-- **磨皮强度**: 0-100
-- **美白强度**: 0-100
-- **瘦脸强度**: 0-100
-- **大眼强度**: 0-100
+
+| 参数 | 范围 | 说明 |
+|------|------|------|
+| **磨皮强度** | 0-100 | 平滑皮肤，减少瑕疵 |
+| **美白强度** | 0-100 | 提亮肤色 |
+| **瘦脸强度** | 0-100 | 瘦脸效果 |
+| **大眼强度** | 0-100 | 放大眼睛 |
 
 ### 播放模式
 
-- **流式播放**: 直接播放网络视频，支持美颜滤镜
-- **本地缓存**: 先下载到本地再播放，播放更流畅
+| 模式 | 优点 | 缺点 | 适用场景 |
+|------|------|------|----------|
+| **流式播放** | 即点即播，无需等待 | 依赖网络稳定性 | 网络良好时 |
+| **本地缓存** | 播放流畅，支持离线 | 需要等待下载 | 网络不稳定或需要反复观看 |
 
-在设置中可以切换 "启用本地缓存 (WebDAV)" 选项。
+💡 **提示**: 在设置中可以切换 "启用本地缓存 (WebDAV)" 选项。
 
 ## 🎯 使用说明
 
@@ -206,28 +233,54 @@ videoplay/
 
 ## 📝 注意事项
 
-- WebDAV 播放需要网络权限
-- 美颜功能仅支持 AVPlayer 播放器
-- 本地缓存会占用临时存储空间，关闭视频时自动清理
-- 首次运行需要授予相册和文件访问权限
+- ⚠️ WebDAV 播放需要网络权限
+- ⚠️ 美颜功能仅支持 AVPlayer 播放器
+- ⚠️ 本地缓存会占用临时存储空间，关闭视频时自动清理
+- ⚠️ 首次运行需要授予相册和文件访问权限
+- ⚠️ GPUPixel 框架文件较大（~4MB），首次克隆可能需要一些时间
 
 ## 🐛 已知问题
 
 - WebDAV 认证失败时会显示错误提示
 - 某些视频格式可能不支持硬件解码
+- 模拟器上美颜效果可能与真机有差异
 
-## 📄 许可证
+## � 未来计划
 
-本项目仅供学习和研究使用。
+- [ ] 支持更多视频格式
+- [ ] 添加视频列表播放功能
+- [ ] 支持 SMB 协议
+- [ ] 优化美颜算法性能
+- [ ] 添加更多滤镜效果
+- [ ] 支持视频截图和录制
+
+## �� 许可证
+
+本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
 
 ## 👥 贡献
 
-欢迎提交 Issue 和 Pull Request！
+欢迎贡献代码！请遵循以下步骤：
+
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启 Pull Request
 
 ## 📧 联系方式
 
-如有问题或建议，请通过 Issue 反馈。
+- **GitHub Issues**: [提交问题](https://github.com/qi-mooo/videoplay/issues)
+- **Pull Requests**: [贡献代码](https://github.com/qi-mooo/videoplay/pulls)
+
+## 🙏 致谢
+
+- [GPUPixel](https://github.com/pixpark/gpupixel) - 高性能图像处理框架
+- [Tuist](https://tuist.io) - Xcode 项目生成工具
 
 ---
 
-**注意**: 本项目使用 GPUPixel 框架，请确保遵守相关许可协议。
+**⚠️ 重要提示**: 
+- 本项目使用 GPUPixel 框架，请确保遵守相关许可协议
+- 仅供学习和研究使用，请勿用于商业用途
+- 使用 WebDAV 功能时请确保网络安全
